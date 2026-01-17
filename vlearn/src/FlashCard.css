@@ -1,0 +1,24 @@
+Button{
+	width: 200px;
+	height: 200px;
+	font-size: 30px;
+	font-weight: bold;
+	hyphens: auto;
+}
+
+.question{
+}
+
+.goodAnswer{
+	background-color: green;
+	border-style:inset;
+}
+
+.wrongAnswer{
+	background-color: red;
+	border-style:inset;
+}
+
+.HighlightGoodAnswer{
+	background-color: green;
+}
