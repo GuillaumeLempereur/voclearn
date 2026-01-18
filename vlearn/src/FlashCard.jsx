@@ -7,7 +7,7 @@ function Card({word, highLight, onCardClick}){
 	);
 }
 
-let Words = [
+var Words = [
     [
         "\u0431\u0443\u0443\u0434\u0430\u043b",
         "hotel"
@@ -92,47 +92,59 @@ let Words = [
 function FlashCard(props){
 	//TODO
 	////const rows = Array.from({ length: 20 }, (_, i) => ["Word", `Row ${i + 1}`]);
-	//const progress = useRef(0); // counter 0 to 4 
-	const [progress, setProgress] = useState(0); // counter 0 to 4
+	const gameStage = useRef(0); // counter 0 to 4 
+	//const [progress, setProgress] = useState(0); // counter 0 to 4
 	const [userAns, setUserAns] = useState(-1); // id of the button clicked, -1 means showing the question
 	const ans = useRef(Math.floor(Math.random()*4)); // id of the right answer
+	let _highLight = ["question","question","question","question"];
 
-	let _highLight = [];
-	let quest = Words[progress*4+ans][1];
+	//console.log(Words);
+	//console.log("prog, ans:" + progress + " " + ans);
+	//console.log(progress*4+ans);
+	var idxAns = ans.current;
+	let progress = gameStage.current;
+	let quest = Words[progress*4+ans.current][1];
 
-	console.log(Words);
 	const onCardClick = (idxClicked) => {
-		/*
-		for(let i=0;i<4;i++){
-			if(i==ans && i == idxClicked){
-				_highLight[i] = "goodAnswer";
-			}else if(i == ans && idxClicked != i){
-				_highLight[i] = "wrongAnswer";
-			}else if(i == ans && i != idxClicked){ // correct answer
-				_highLight[i] = "goodAnswer";
-			}else{
-				_highLight[i] = "question";
-			}
+		setUserAns(idxClicked);
+		setTimeout(() => {
+			gameStage.current++;
 			setUserAns(-1);
-		}
-		*/
-/*
-	setTimeout(() => {
-		progress.current++;
-		setProgress(progress+1);
-	}, 1000);
- * */
-		ans.current = Math.floor(Math.random()*4); // id of the right answer
+			ans.current = Math.floor(Math.random()*4); // id of the right answer
+		}, 1600);
 	};
 
-	let words = [];
-	for(let i=0;i<4;++i)
-		words.push(Words[progress*4+i][0]);
+	if(userAns >=0){ // process answer
+		let idxClicked = userAns;
+	for(let i=0;i<4;i++){
+		if(i==idxAns && i == idxClicked){
+			_highLight[i] = "goodAnswer";
+		}else if(i != idxAns && idxClicked == i){
+			_highLight[i] = "wrongAnswer";
+		}else if(i == idxAns && i != idxClicked){ // correct answer
+			_highLight[i] = "goodAnswer";
+		}else{
+			_highLight[i] = "question";
+		}
+	}
+	}
+	let DBG = _highLight;
+	let words = ["","","",""];
+	if(progress<=4)
+		for(let i=0;i<4;++i)
+			words[i] = Words[progress*4+i][0];
+	else
+		userAns = 4;
 	
+	if(userAns==4)
+		return (<p>end</p>)
+	else
 	return (
+<>
 <table>
+<tbody>
 	<tr>
-		<td colspan="2">{quest}</td>
+		<td colSpan="2">{quest}</td>
 	</tr>
 	<tr>
 		<td>
@@ -150,7 +162,10 @@ function FlashCard(props){
 			<Card word={words[3]} onCardClick={() => onCardClick(3)} highLight={_highLight[3]}/>
 		</td>
 	</tr>
+</tbody>
 </table>
+<p>{DBG}</p>
+</>
 	);
 }
 
