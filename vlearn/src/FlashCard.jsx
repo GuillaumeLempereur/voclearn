@@ -1,4 +1,5 @@
 import React, { useState , useRef} from 'react';
+//import {ActivityIndicator} from 'react-native'; // can't use it
 import './FlashCard.css';
 
 function Card({word, highLight, onCardClick}){
@@ -7,95 +8,17 @@ function Card({word, highLight, onCardClick}){
 	);
 }
 
-var Words = [
-    [
-        "\u0431\u0443\u0443\u0434\u0430\u043b",
-        "hotel"
-    ],
-    [
-        "\u0430\u043d\u0433\u0438",
-        "family"
-    ],
-    [
-        "\u043e\u043d",
-        "year"
-    ],
-    [
-        "\u043e\u043b\u043e\u0445",
-        "find"
-    ],
-    [
-        "\u0445\u043e\u043e\u043b",
-        "food"
-    ],
-    [
-        "\u0437\u0430\u0434\u0433\u0430\u0439",
-        "open"
-    ],
-    [
-        "\u044f\u043c\u0430\u0440",
-        "which"
-    ],
-    [
-        "\u044f\u0440\u0438\u0445",
-        "speak"
-    ],
-    [
-        "\u0431\u0430\u0433\u0430",
-        "small"
-    ],
-    [
-        "\u0442\u04af\u04af\u0445",
-        "story"
-    ],
-    [
-        "\u0443\u043b\u0430\u0430\u043d \u043b\u043e\u043e\u043b\u044c",
-        "tomato"
-    ],
-    [
-        "\u0441\u0430\u0445\u0430\u043b",
-        "beard"
-    ],
-    [
-        "\u0433\u044d\u043b\u044d\u043d",
-        " monk"
-    ],
-    [
-        "\u04af\u043d\u044d\u0433",
-        "fox"
-    ],
-    [
-        "\u0448\u0438\u0440\u044d\u044d",
-        "desk"
-    ],
-    [
-        "\u0430\u0432\u044c\u044f\u0430\u0441",
-        "skill"
-    ],
-    [
-        "\u0430\u044f\u0433\u0430",
-        "cup"
-    ],
-    [
-        "\u0445\u0430\u0433\u0430\u0441",
-        " half"
-    ],
-    [
-        "\u04af\u0439\u043b \u04af\u0433",
-        "verb"
-    ],
-    [
-        "\u043c\u0443\u0443\u0440",
-        "cat"
-    ]];
-
 function FlashCard(props){
 	//TODO
 	////const rows = Array.from({ length: 20 }, (_, i) => ["Word", `Row ${i + 1}`]);
 	const gameStage = useRef(0); // counter 0 to 4 
-	//const [progress, setProgress] = useState(0); // counter 0 to 4
+	const score = useRef(0); // Score 0
+	const stat = useRef([]); // append result for updating the stat at the end of the game
 	const [userAns, setUserAns] = useState(-1); // id of the button clicked, -1 means showing the question
 	const ans = useRef(Math.floor(Math.random()*4)); // id of the right answer
+	const [isLoading, setLoading] = useState(true);
+	const [updateStatResult, setUpdateStatResult] = useState({});
+
 	let _highLight = ["question","question","question","question"];
 
 	//console.log(Words);
@@ -103,7 +26,10 @@ function FlashCard(props){
 	//console.log(progress*4+ans);
 	var idxAns = ans.current;
 	let progress = gameStage.current;
-	let quest = Words[progress*4+ans.current][1];
+
+	const onRestartClick = () =>{
+		props.trigRestart(true);
+	};
 
 	const onCardClick = (idxClicked) => {
 		setUserAns(idxClicked);
@@ -111,34 +37,90 @@ function FlashCard(props){
 			gameStage.current++;
 			setUserAns(-1);
 			ans.current = Math.floor(Math.random()*4); // id of the right answer
-		}, 1600);
+		}, 1200);
+	};
+
+	const updateStat = async () => {
+		try{
+			const response = await fetch('https://mywebsite.com/endpoint/', { //TODO
+				method: 'POST',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					wordsStats: stat.current,
+					reverseMode: props.reverse
+				}),
+			});
+			const json = (await response.json());
+			setUpdateStatResult(json.status);
+		}catch(error){
+			console.error(error);
+		}finally{
+			setLoading(false);
+		}
 	};
 
 	if(userAns >=0){ // process answer
 		let idxClicked = userAns;
-	for(let i=0;i<4;i++){
-		if(i==idxAns && i == idxClicked){
-			_highLight[i] = "goodAnswer";
-		}else if(i != idxAns && idxClicked == i){
-			_highLight[i] = "wrongAnswer";
-		}else if(i == idxAns && i != idxClicked){ // correct answer
-			_highLight[i] = "goodAnswer";
-		}else{
-			_highLight[i] = "question";
+		let cardClass = {"TP": "goodAnswer", "FN": "goodAnswer", "FP" : "wrongAnswer", "TN" : "question"};
+		for(let i=0;i<4;i++){
+			let idDeck = progress*4+userAns, result = "TN";
+			// Button class style to display after clicking
+
+			if(i==idxAns && i == idxClicked){
+				result = "TP";
+				score.current++;
+				//update stat
+			}else if(i != idxAns && idxClicked == i){
+				result = "FP";
+			}else if(i == idxAns && i != idxClicked){ // correct answer
+				result = "FN";
+			} //else TN
+			_highLight[i] = cardClass[result];
+			stat.current.push(props.deck[idDeck].concat(result));
 		}
-	}
 	}
 	let DBG = _highLight;
 	let words = ["","","",""];
-	if(progress<=4)
-		for(let i=0;i<4;++i)
-			words[i] = Words[progress*4+i][0];
+	let quest;
+	if(progress<=4){
+		for(let i=0;i<4;++i){
+			let idDeck = progress*4+i;
+			if(props.reverse)
+				words[i] = props.Words[props.deck[idDeck][0]][1];
+			else
+				words[i] = props.Words[props.deck[idDeck][1]][1];
+		}
+		let idDeck = progress*4+ans.current;
+		if(props.reverse)
+			quest = props.Words[props.deck[idDeck][0]][0];
+		else
+			quest = props.Words[props.deck[idDeck][0]][1];
+	}
+	/*
 	else
-		userAns = 4;
-	
-	if(userAns==4)
-		return (<p>end</p>)
-	else
+		setUserAns(4); // usefull ?
+	*/
+
+	if(progress==5){
+		//TODO post data
+		updateStat();
+		// <ActivityIndicator />
+		return (
+<>
+	{isLoading ? (
+		<p>loading</p>
+	) : (
+		<p>Stat updated</p>
+	)
+	}
+	<p>Score: {score.current}/5</p>
+	<button onClick={() => onRestartClick()}>Restart</button>
+</>
+		);
+	}
 	return (
 <>
 <table>
