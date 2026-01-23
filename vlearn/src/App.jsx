@@ -10,6 +10,18 @@ function App(props){
     );
   };
 
+	async function sendData(){
+	const response = await fetch("http://51.178.142.176:5000/words", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: JSON.stringify({nb_words: 50})
+	});
+		const data = await response.json();
+		console.log(data);
+	}
+	sendData();
   return (
     <table border="1">
       <tbody>
