@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import FlashCard from './FlashCard.jsx'
 
 function App(props){
   //const rows = Array.from({ length: 20 }, (_, i) => ["Word", `Row ${i + 1}`]);
@@ -23,6 +24,7 @@ function App(props){
 	}
 	sendData();
   return (
+	  <>
     <table border="1">
       <tbody>
 	  <tr>
@@ -39,6 +41,8 @@ function App(props){
         ))}
       </tbody>
     </table>
+	  <FlashCard />
+	  </>
   );
 }
 
