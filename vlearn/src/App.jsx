@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import FlashCard from './FlashCard.jsx'
+import FlashCard from './FlashCard.jsx';
+import Words from './Words.json';
 
 function App(props){
-  //const rows = Array.from({ length: 20 }, (_, i) => ["Word", `Row ${i + 1}`]);
-  const [visibleRows, setVisibleRows] = useState(Array(20).fill(false));
+	const [words, setWords] = useState([]);
+	const [visibleRows, setVisibleRows] = useState(Array(20).fill(false));
+	//var words = [];
 
   const toggleRow = (index) => {
     setVisibleRows((prev) =>
@@ -21,6 +23,10 @@ function App(props){
 	});
 		const data = await response.json();
 		console.log(data);
+		let w = [];
+		for(let i=0;i<data.Words.length;++i)
+			w.push([Words[data.Words[i][0]][1], Words[data.Words[i][1]][1], data.Words[i][2]]);
+		setWords(w);
 	}
 	sendData();
   return (
@@ -31,7 +37,7 @@ function App(props){
 		<th>English</th>
 		<th>Mongol</th>
 	  </tr>
-        {props.words.map((row, i) => (
+        {words.map((row, i) => (
           <tr key={i}>
             <td>{row[1]}</td>
             <td onClick={() => toggleRow(i)}>
