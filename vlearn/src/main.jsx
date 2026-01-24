@@ -20,7 +20,7 @@ let rows = words.map((it, i, ar) => shuffle(it, i, ar));
 rows = rows.slice(-20);
 console.log(words[0][1]);
 */
-
+/*
 let words = [];
 let c = 0;
 //for(const w1ID in Stats){
@@ -42,11 +42,12 @@ for(const w1ID in Translations){
 		break;
 }
 console.log(c);
-
+*/
+/*
 let rows = words.map((it, i, ar) => shuffle(it, i, ar));
 rows = rows.slice(-20);
 console.log(words[0][1]);
-
+*/
 
 createRoot(document.getElementById('root')).render(
 	<App/>

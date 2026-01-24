@@ -9,6 +9,7 @@ function App(props){
 	const [visibleRows, setVisibleRows] = useState(Array(20).fill(false));
 	const [restart, setRestart] = useState(false);
 	const [reverse, setReverse] = useState(false);
+	var deck = []; // list of 20 tuples [word ID 1, word ID 2]
 
 	const toggleRow = (index) => {
 		setVisibleRows((prev) =>
@@ -38,7 +39,6 @@ function App(props){
 	//setReverse(!reverse);
 
 	//var reverse = false;
-	var deck = []; // list of 20 tuples [word ID 1, word ID 2]
 	for(const w1ID in Translations){ //TODO fix it no twice same ID!!!! language handle
 		for(const w2ID in Translations[w1ID]){
 			if(w2ID < 196608) // skip korean
@@ -60,7 +60,7 @@ function App(props){
 		<th>Mongol</th>
 		<th>Status</th>
 	</tr>
-		{props.words.map((row, i) => (
+		{words.map((row, i) => (
 			<tr key={i}>
 				<td>{row[1]}</td>
 				<td onClick={() => toggleRow(i)}>{visibleRows[i] ? row[0]: ''}</td>
