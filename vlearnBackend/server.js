@@ -38,6 +38,43 @@ connection.query('UPDATE Stats SET Status = !Status WHERE WordId_1 = ' + wStat[0
 });
 });
 
+app.post('/updateStat', (req, res) => {
+  const { wordsStats, reverseMode } = req.body;
+  var ret = [];
+  scores = {
+    "TP" : 0.5,
+    "TN" : 0.2,
+    "FP" : 0.0,
+    "FN" : 0.0};
+  let req = '';
+  if(reverseMode)
+    req = 'UPDATE Stats SET ScoreInv_3 = ScoreInv_2, ScoreInv_2 = ScoreInv_1, ScoreInv_1 = ?, Date = NOW(), HalfLife = CASE WHEN ? > 0 THEN HALF_LIFE*2 ELSE HALF_LIFE END WHERE UserId = 0 AND WordId_1 = ? AND WordId_2 = ?'
+  else
+    req = 'UPDATE Stats SET Score_3 = Score_2, Score_2 = Score_1, Score_1 = ?, Date = NOW(), HalfLife = CASE WHEN ? > 0 THEN HALF_LIFE*2 ELSE HALF_LIFE END WHERE UserId = 0 AND WordId_1 = ? AND WordId_2 = ?'
+  const statement = await connection.prepare(req);
+//TODO deck w1 w2 stat + res
+[$score, $score, $w1, $w2]
+try {
+// Execute for each record
+for (const record of wordsStats) {
+await statement.execute([record[0], record[2]]);
+console.log(`Updated product ${record.product_id}`);
+}
+
+// Close the statement
+await statement.close();
+} catch (error) {
+await statement.close();
+throw error;
+}
+connection.query('UPDATE Stats SET Status = !Status WHERE WordId_1 = ' + wStat[0] + ' AND WordId_2 = ' + wStat[1], function(err, rows, fields){
+  console.log('Connection result error '+err);
+  connection.query('Select Status FROM Stats WHERE WordId_1 = ' + wStat[0] + ' AND WordId_2 = ' + wStat[1], function(err, rows, fields){
+  res.json((rows[0].Status == true));
+  });
+});
+});
+
 app.listen(5000, () => {
   console.log('Backend running');
 });

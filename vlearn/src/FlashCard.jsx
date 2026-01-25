@@ -1,6 +1,7 @@
 import React, { useState , useRef} from 'react';
 //import {ActivityIndicator} from 'react-native'; // can't use it
 import './FlashCard.css';
+import Words from './Words.json'
 
 function Card({word, highLight, onCardClick}){
 	return (
@@ -42,7 +43,7 @@ function FlashCard(props){
 
 	const updateStat = async () => {
 		try{
-			const response = await fetch('https://mywebsite.com/endpoint/', { //TODO
+			const response = await fetch('http://51.178.142.176:5000/updateStat', { //TODO
 				method: 'POST',
 				headers: {
 					Accept: 'application/json',
@@ -54,7 +55,8 @@ function FlashCard(props){
 				}),
 			});
 			const json = (await response.json());
-			setUpdateStatResult(json.status);
+			//setUpdateStatResult(json.status);
+			stat.current = [];
 		}catch(error){
 			console.error(error);
 		}finally{
@@ -89,15 +91,15 @@ function FlashCard(props){
 		for(let i=0;i<4;++i){
 			let idDeck = progress*4+i;
 			if(props.reverse)
-				words[i] = props.Words[props.deck[idDeck][0]][1];
+				words[i] = Words[props.deck[idDeck][0]][1];
 			else
-				words[i] = props.Words[props.deck[idDeck][1]][1];
+				words[i] = Words[props.deck[idDeck][1]][1];
 		}
 		let idDeck = progress*4+ans.current;
 		if(props.reverse)
-			quest = props.Words[props.deck[idDeck][0]][0];
+			quest = Words[props.deck[idDeck][0]][0];
 		else
-			quest = props.Words[props.deck[idDeck][0]][1];
+			quest = Words[props.deck[idDeck][0]][1];
 	}
 	/*
 	else

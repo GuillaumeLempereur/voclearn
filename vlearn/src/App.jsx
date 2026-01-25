@@ -52,9 +52,10 @@ function App(props){
 	  {deck.length > 0 ? (
 	  <WordsTable deck={deck} />
 	  ) : ""}
-		{(deck.length >= 20) & 
+		{(deck.length >= 20) ? (
 			<FlashCard Words={Words} deck={deck} reverse={reverse} trigRestart={setRestart} restart={restart}/>
-		}
+		) : 'Loading'}
+	  <p>L: {deck.length}</p>
 	</>
   );
 }
