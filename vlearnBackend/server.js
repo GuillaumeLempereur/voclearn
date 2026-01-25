@@ -27,6 +27,17 @@ connection.query('SELECT WordId_1, WordId_2, Status  FROM Stats WHERE WordId_2 >
 });
 });
 
+app.post('/status', (req, res) => {
+  const { wStat } = req.body;
+var ret = [];
+connection.query('UPDATE Stats SET Status = !Status WHERE WordId_1 = ' + wStat[0] + ' AND WordId_2 = ' + wStat[1], function(err, rows, fields){
+  console.log('Connection result error '+err);
+  connection.query('Select Status FROM Stats WHERE WordId_1 = ' + wStat[0] + ' AND WordId_2 = ' + wStat[1], function(err, rows, fields){
+  res.json((rows[0].Status == true));
+  });
+});
+});
+
 app.listen(5000, () => {
   console.log('Backend running');
 });
