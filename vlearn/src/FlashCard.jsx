@@ -68,7 +68,7 @@ function FlashCard(props){
 		let idxClicked = userAns;
 		let cardClass = {"TP": "goodAnswer", "FN": "goodAnswer", "FP" : "wrongAnswer", "TN" : "question"};
 		for(let i=0;i<4;i++){
-			let idDeck = progress*4+userAns, result = "TN";
+			let idDeck = progress*4+i, result = "TN";
 			// Button class style to display after clicking
 
 			if(i==idxAns && i == idxClicked){
@@ -87,6 +87,7 @@ function FlashCard(props){
 	let DBG = _highLight;
 	let words = ["","","",""];
 	let quest;
+
 	if(progress<=4){
 		for(let i=0;i<4;++i){
 			let idDeck = progress*4+i;
@@ -97,7 +98,7 @@ function FlashCard(props){
 		}
 		let idDeck = progress*4+ans.current;
 		if(props.reverse)
-			quest = Words[props.deck[idDeck][0]][0];
+			quest = Words[props.deck[idDeck][1]][1];
 		else
 			quest = Words[props.deck[idDeck][0]][1];
 	}
@@ -108,7 +109,8 @@ function FlashCard(props){
 
 	if(progress==5){
 		//TODO post data
-		updateStat();
+		if(stat.current.length>0)// called 3 times don't know why
+			updateStat();
 		// <ActivityIndicator />
 		return (
 <>
