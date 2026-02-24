@@ -10,6 +10,12 @@ function App(props){
 	const [wordTable, setWordTable] = useState([]);
 	const [restart, setRestart] = useState(false);
 	const [reverse, setReverse] = useState(false);
+	const [sortOnStatus, setSortOnStatus] = useState("");
+
+	// Select Sort on Status: ALL / Active / Inactive
+	const handleChangeSortOnStatus = (event) => {
+		setSortOnStatus(event.target.value)
+	}
 
 	async function getDeck(){
 		const response = await fetch("http://51.178.142.176:5000/getDeck", {
@@ -32,7 +38,7 @@ function App(props){
 			headers: {
 				"Content-Type": "application/json"
 			},
-			body: JSON.stringify({nb_words: 50})
+			body: JSON.stringify({nb_words: 50, sort_on_status: sortOnStatus})
 		});
 		const data = await response.json();
 		var wordTableTmp = []; // list of 20 tuples [word ID 1, word ID 2, status]
@@ -65,6 +71,11 @@ function App(props){
 */
   return (
 	<>
+	  <select name="sort" id="sort" onChange={handleChangeSortOnStatus}>
+	  <option value="">All</option>
+	  <option value="1">Active</option>
+	  <option value="0">Inactive</option>
+	  </select>
 	  {deck.length > 0 ? (
 	  <WordsTable deck={wordTable} />
 	  ) : ""}

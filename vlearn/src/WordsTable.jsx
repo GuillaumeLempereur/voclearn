@@ -12,6 +12,7 @@ function WordsTable(props){
 			prev.map((v, i) => (i === index ? !v : v))
 		);
 	};
+
 	async function reqToggleStatus(w1, w2, index){
 		const response = await fetch("http://51.178.142.176:5000/status", {
 			method: "POST",
@@ -33,6 +34,7 @@ console.log(Wstatus);
 	};
 
   return (
+	  <>
     <table border="1">
       <tbody>
 	  <tr>
@@ -51,6 +53,7 @@ console.log(Wstatus);
 	  ))}
       </tbody>
     </table>
+	  </>
   );
 }
 export default WordsTable;
