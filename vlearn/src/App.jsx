@@ -11,10 +11,16 @@ function App(props){
 	const [restart, setRestart] = useState(false);
 	const [reverse, setReverse] = useState(false);
 	const [sortOnStatus, setSortOnStatus] = useState("");
+	const [offset, setOffset] = useState(0);
 
 	// Select Sort on Status: ALL / Active / Inactive
 	const handleChangeSortOnStatus = (event) => {
-		setSortOnStatus(event.target.value)
+		setSortOnStatus(event.target.value);
+	}
+
+	// Select Sort on Status: ALL / Active / Inactive
+	const handleChangeOffset = (event) => {
+		setOffset(event.target.value);
 	}
 
 	async function getDeck(){
@@ -38,19 +44,25 @@ function App(props){
 			headers: {
 				"Content-Type": "application/json"
 			},
-			body: JSON.stringify({nb_words: 50, sort_on_status: sortOnStatus})
+			body: JSON.stringify({nb_words: 50, sort_on_status: sortOnStatus, offset: offset})
 		});
 		const data = await response.json();
 		var wordTableTmp = []; // list of 20 tuples [word ID 1, word ID 2, status]
 		for(let i=0;i<data.Words.length && i<20;++i)
 			wordTableTmp.push([data.Words[i][0], data.Words[i][1], data.Words[i][2]]);
 		setWordTable(wordTableTmp);
+		console.log("wordTableTmp");
+		console.log(wordTableTmp);
 	}
-
+	
 	useEffect(() => {
 		getDeck();
 		getWordTable();
 	}, []);
+
+	useEffect(() => {
+		getWordTable();
+	}, [sortOnStatus, offset]);
 
 	//TODO put a button
 	//setReverse(!reverse);
@@ -69,13 +81,16 @@ function App(props){
 			break;
 	}
 */
+	console.log("Words");
+	console.log(Words);
   return (
 	<>
 	  <select name="sort" id="sort" onChange={handleChangeSortOnStatus}>
 	  <option value="">All</option>
-	  <option value="1">Active</option>
-	  <option value="0">Inactive</option>
+	  <option value="active">Active</option>
+	  <option value="inactive">Inactive</option>
 	  </select>
+	  <input type="number" name="offset" id="offset" onChange={handleChangeOffset} min="0" max="10" value={offset}/>
 	  {deck.length > 0 ? (
 	  <WordsTable deck={wordTable} />
 	  ) : ""}

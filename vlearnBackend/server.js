@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-//const mysql = require('mysql');
+const credential = require('./credential.json');
 const mysql = require('mysql2');
 const mysql2 = require('mysql2/promise');
 
@@ -8,13 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'vlearn',
-    password: 'mnltyu',
-    database: 'VocLearn'
-})
-
+const connection = mysql.createConnection(credential);
 
 connection.connect();
 
@@ -48,13 +42,19 @@ connection.query(reqSQL, function(err, rows, fields){
 
 //TODO getdeck
 app.post('/words', (req, res) => {
-  const { nb_words, sort} = req.body;
+  const { nb_words, sort_on_status, offset} = req.body;
   var ret = [];
-  reqSQL = 'SELECT WordId_1, WordId_2, Status FROM Stats WHERE WordId_2 >= 196608 LIMIT 50';
+  if(sort_on_status == "")
+    reqSQL = 'SELECT WordId_1, WordId_2, Status, Score_1, Score_2, Score_3 FROM Stats WHERE WordId_2 >= 196608 LIMIT 50 OFFSET '+ offset*20;
+  else if(sort_on_status == "active")
+    reqSQL = "SELECT WordId_1, WordId_2, Status , Score_1, Score_2, Score_3 FROM Stats WHERE WordId_2 >= 196608 AND status = 1 LIMIT 50 OFFSET "+ offset*20;
+  else if(sort_on_status == "inactive")
+    reqSQL = "SELECT WordId_1, WordId_2, Status , Score_1, Score_2, Score_3 FROM Stats WHERE WordId_2 >= 196608 AND status = 0 LIMIT 50 OFFSET "+ offset*20;
+  console.log(req);
   connection.query(reqSQL, function(err, rows, fields){
     console.log('Connection result error '+err);
     for(let i=0;i<rows.length;++i){
-      ret.push([rows[i]['WordId_1'], rows[i]['WordId_2'], rows[i]['Status']]);
+      ret.push([rows[i]['WordId_1'], rows[i]['WordId_2'], rows[i]['Status'], rows[i]['Score_1'], rows[i]['Score_2'], rows[i]['Score_3']]);
     }
     res.json({ Words: ret});
   });
@@ -115,12 +115,13 @@ app.post('/updateStat', (req, res) => {
     const { wordsStats, reverseMode } = req.body;
     var ret = [];
 
+  // TODO: set halflife max
 //console.log();
     let reqSQL = '';
     if(reverseMode)
-        reqSQL = 'UPDATE Stats SET ScoreInv_3 = ScoreInv_2, ScoreInv_2 = ScoreInv_1, ScoreInv_1 = ?, Date = NOW(), HalfLife = CASE WHEN ? > 0 THEN HalfLife*2 ELSE HalfLife END WHERE UserId = 0 AND WordId_1 = ? AND WordId_2 = ?'
+        reqSQL = 'UPDATE Stats SET ScoreInv_3 = ScoreInv_2, ScoreInv_2 = ScoreInv_1, ScoreInv_1 = ?, Date = NOW(), HalfLife = CASE WHEN ? > 0 AND HalfLife < 100 THEN HalfLife*2 ELSE HalfLife END WHERE UserId = 0 AND WordId_1 = ? AND WordId_2 = ?'
     else
-        reqSQL = 'UPDATE Stats SET Score_3 = Score_2, Score_2 = Score_1, Score_1 = ?, Date = NOW(), HalfLife = CASE WHEN ? > 0 THEN HalfLife*2 ELSE HalfLife END WHERE UserId = 0 AND WordId_1 = ? AND WordId_2 = ?'
+        reqSQL = 'UPDATE Stats SET Score_3 = Score_2, Score_2 = Score_1, Score_1 = ?, Date = NOW(), HalfLife = CASE WHEN ? > 0 AND HalfLife < 100 THEN HalfLife*2 ELSE HalfLife END WHERE UserId = 0 AND WordId_1 = ? AND WordId_2 = ?'
 
   res.json(updateStat(reqSQL, wordsStats));
 });

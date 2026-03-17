@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Words from './Words.json'
 
 function WordsTable(props){
@@ -12,6 +12,10 @@ function WordsTable(props){
 			prev.map((v, i) => (i === index ? !v : v))
 		);
 	};
+	
+	useEffect(() => {
+		setWStatus(props.deck.map((v) => v[2]));
+	}, [props.deck]);
 
 	async function reqToggleStatus(w1, w2, index){
 		const response = await fetch("http://51.178.142.176:5000/status", {
@@ -26,10 +30,7 @@ function WordsTable(props){
 			prev.map((v, i) => (i === index ? data : v))
 		);
 	}
-console.log(props.deck);
-console.log(Wstatus);
 	const toggleStatus = (index) => {
-		console.log("plop " + index);
 		reqToggleStatus(props.deck[index][0], props.deck[index][1], index);
 	};
 
