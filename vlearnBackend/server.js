@@ -12,13 +12,23 @@ const connection = mysql.createConnection(credential);
 
 connection.connect();
 
+
+/**
+ * getDeck: Send an array of tuple (WordId1, WordId_2, Status) starting from the lowest score to the higher
+ * a word can be present only once in the array meaning the WordId_1 and WordId_2 are unique in the returned array
+ * TODO check if in case of duplicated wordId_x if we can take higher score and not always the smallest
+ * TODO handle if array returned is smaller
+ * @data {number} nb_words - The number of tuple to be returned.
+ * @returns {object} The array of tuples
+ */
 app.post('/getDeck', (req, res) => {
     const { nb_words } = req.body;
     var ret = [];
     reqSQL = 'SELECT WordId_1, WordId_2, Status FROM Stats WHERE Status = true AND WordId_2 >= 196608 LIMIT 50 ORDER BY Score_1*0.5 + Score_2*0.3 + Score_3*0.2'; // TODO reverse mode
     reqSQL = 'SELECT WordId_1, WordId_2, Status FROM Stats WHERE Status = true AND WordId_2 >= 196608 LIMIT 50 ORDER BY Score_1'; // TODO reverse mode
     reqSQL = 'SELECT WordId_1, WordId_2, Status FROM Stats WHERE Status = true AND WordId_2 >= 196608 LIMIT 50'; // TODO reverse mode
-    reqSQL = 'SELECT WordId_1, WordId_2, Status FROM Stats WHERE Status = true AND WordId_2 >= 196608 ORDER BY Score_1*0.5 + Score_2*0.3 + Score_3*0.2'; // TODO reverse mode
+    reqSQL = 'SELECT WordId_1, WordId_2, Status FROM Stats ORDER BY Score_1*0.5 + Score_2*0.3 + Score_3*0.2'; // TODO reverse mode
+    //reqSQL = 'SELECT WordId_1, WordId_2, Status, Score_1, Score_2, Score_3 FROM Stats ORDER BY Score_1*0.5 + Score_2*0.3 + Score_3*0.2 ASC'; // TODO reverse mode
 connection.query(reqSQL, function(err, rows, fields){
   console.log('Connection result error '+err);
   w1ID_set = new Set();
@@ -32,7 +42,9 @@ connection.query(reqSQL, function(err, rows, fields){
       continue;
     w1ID_set.add(w1ID);
     w2ID_set.add(w2ID);
+    console.log([w1ID, w2ID, rows[i]['Status']]);
     ret.push([w1ID, w2ID, rows[i]['Status']]);
+    //ret.push([w1ID, w2ID, rows[i]['Status'], rows[i]['Score_1'], rows[i]['Score_2'], rows[i]['Score_3']]);
     if(ret.length==nb_words)
       break;
   }
@@ -78,7 +90,7 @@ async function updateStat(reqSQL, wordsStats){
     password: 'mnltyu',
     database: 'VocLearn'
   })
-  const scores = { TP: 0.5, TN: 0.2, FP: 0.0, FN: 0.0 };
+  const scores = { TP: 1.0, TN: 0.2, FP: 0.0, FN: 0.0 };
   console.log("conn2");
   console.log(conn2);
   const statement = await conn2.prepare(reqSQL);
@@ -119,9 +131,9 @@ app.post('/updateStat', (req, res) => {
 //console.log();
     let reqSQL = '';
     if(reverseMode)
-        reqSQL = 'UPDATE Stats SET ScoreInv_3 = ScoreInv_2, ScoreInv_2 = ScoreInv_1, ScoreInv_1 = ?, Date = NOW(), HalfLife = CASE WHEN ? > 0 AND HalfLife < 100 THEN HalfLife*2 ELSE HalfLife END WHERE UserId = 0 AND WordId_1 = ? AND WordId_2 = ?'
+        reqSQL = 'UPDATE Stats SET ScoreInv_3 = ScoreInv_2, ScoreInv_2 = ScoreInv_1, ScoreInv_1 = ?, Date = NOW(), HalfLife = CASE WHEN ? > 0 AND HalfLife < 100 THEN HalfLife+1 ELSE HalfLife END WHERE UserId = 0 AND WordId_1 = ? AND WordId_2 = ?'
     else
-        reqSQL = 'UPDATE Stats SET Score_3 = Score_2, Score_2 = Score_1, Score_1 = ?, Date = NOW(), HalfLife = CASE WHEN ? > 0 AND HalfLife < 100 THEN HalfLife*2 ELSE HalfLife END WHERE UserId = 0 AND WordId_1 = ? AND WordId_2 = ?'
+        reqSQL = 'UPDATE Stats SET Score_3 = Score_2, Score_2 = Score_1, Score_1 = ?, Date = NOW(), HalfLife = CASE WHEN ? > 0 AND HalfLife < 100 THEN HalfLife+1 ELSE HalfLife END WHERE UserId = 0 AND WordId_1 = ? AND WordId_2 = ?'
 
   res.json(updateStat(reqSQL, wordsStats));
 });
