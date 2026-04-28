@@ -54,13 +54,14 @@ function App(props){
 		console.log("wordTableTmp");
 		console.log(wordTableTmp);
 	}
-	
+	/*
 	useEffect(() => {
 		getDeck();
 		getWordTable();
 	}, []);
-
+	*/
 	useEffect(() => {
+		getDeck();
 		getWordTable();
 	}, [sortOnStatus, offset]);
 
@@ -90,7 +91,7 @@ function App(props){
 	  <option value="active">Active</option>
 	  <option value="inactive">Inactive</option>
 	  </select>
-	  <input type="number" name="offset" id="offset" onChange={handleChangeOffset} min="0" max="10" value={offset}/>
+	  <input type="number" name="offset" id="offset" onChange={handleChangeOffset} min="0" value={offset}/>
 	  {deck.length > 0 ? (
 	  <WordsTable deck={wordTable} />
 	  ) : ""}
